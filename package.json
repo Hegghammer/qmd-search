@@ -1,0 +1,170 @@
+{
+  "name": "qmd-search",
+  "displayName": "QMD Search",
+  "description": "Search a QMD knowledge-base index from a polished VS Code sidebar.",
+  "version": "0.1.0",
+  "publisher": "hegghammer",
+  "author": "Thomas Hegghammer",
+  "license": "MIT",
+  "homepage": "https://github.com/Hegghammer/qmd-search#readme",
+  "bugs": {
+    "url": "https://github.com/Hegghammer/qmd-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hegghammer/qmd-search.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "qmd",
+    "markdown",
+    "search",
+    "knowledge-base",
+    "semantic-search"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "qmdSearch.focus",
+        "title": "QMD Search: Focus Search"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qmdSearch",
+          "title": "QMD Search",
+          "icon": "media/search.svg"
+        }
+      ]
+    },
+    "views": {
+      "qmdSearch": [
+        {
+          "id": "qmdSearch.view",
+          "name": "Search QMD Index",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "QMD Search",
+      "properties": {
+        "qmdSearch.executablePath": {
+          "type": "string",
+          "default": "qmd",
+          "description": "QMD executable name or path. The extension also checks common Bun, local-bin, and npm user install locations."
+        },
+        "qmdSearch.defaultMode": {
+          "type": "string",
+          "enum": [
+            "query",
+            "search",
+            "vsearch"
+          ],
+          "enumDescriptions": [
+            "Hybrid search with query expansion and reranking.",
+            "Fast BM25 keyword search.",
+            "Vector similarity search."
+          ],
+          "default": "query",
+          "description": "Search mode selected when the QMD Search view first opens."
+        },
+        "qmdSearch.vectorSearchMode": {
+          "type": "string",
+          "enum": [
+            "single",
+            "expanded"
+          ],
+          "enumDescriptions": [
+            "Run one structured vector query without expansion or reranking. Lower latency.",
+            "Run QMD vsearch with query expansion. Higher recall but substantially slower."
+          ],
+          "default": "single",
+          "description": "Vector search strategy. Use expanded on hardware where QMD's query expansion latency is acceptable."
+        },
+        "qmdSearch.maxResults": {
+          "type": "integer",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "Maximum number of ranked QMD results shown for one search."
+        },
+        "qmdSearch.resultFontFamily": {
+          "type": "string",
+          "default": "",
+          "description": "CSS font family used in result cards. Leave empty to use the editor font family."
+        },
+        "qmdSearch.resultFontSize": {
+          "type": "number",
+          "default": 12,
+          "minimum": 8,
+          "maximum": 32,
+          "description": "Base font size in pixels for result cards."
+        },
+        "qmdSearch.snippetLines": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Maximum number of snippet lines shown for each result."
+        },
+        "qmdSearch.resultLayout": {
+          "type": "string",
+          "enum": [
+            "tall",
+            "wide"
+          ],
+          "enumDescriptions": [
+            "Show result metadata on separate lines.",
+            "Show rank, title, and score on one line, with the source path below."
+          ],
+          "default": "tall",
+          "description": "Layout used for result metadata."
+        },
+        "qmdSearch.compactSpacing": {
+          "type": "boolean",
+          "default": false,
+          "description": "Reduce vertical padding, gaps, and snippet line spacing to fit more results in the sidebar."
+        },
+        "qmdSearch.collections": {
+          "type": "array",
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "default": [],
+          "description": "Up to five QMD collection names to show as search checkboxes. Leave empty to search all collections included by default."
+        },
+        "qmdSearch.index": {
+          "type": "string",
+          "default": "",
+          "description": "Optional named QMD index. Leave empty to use QMD's default or project-local index."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "compile": "npm run clean && tsc -p ./",
+    "check": "tsc -p ./ --noEmit",
+    "test": "npm run compile && node --test",
+    "package": "vsce package",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/vscode": "1.95.0",
+    "@vscode/vsce": "3.9.2",
+    "typescript": "^5.7.2"
+  }
+}
