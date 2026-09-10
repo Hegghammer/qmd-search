@@ -2,7 +2,7 @@
   "name": "qmd-search",
   "displayName": "QMD Search",
   "description": "Search a QMD knowledge-base index from a polished VS Code sidebar.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "hegghammer",
   "author": "Thomas Hegghammer",
   "license": "MIT",

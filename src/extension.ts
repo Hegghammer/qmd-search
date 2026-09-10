@@ -1,9 +1,10 @@
-import { execFile, spawn, type ChildProcess } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { accessSync, constants } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
+import { terminateProcessTree } from "./process";
 import { buildQmdArgs, parseQmdOutput, QMD_MODES, type QmdMode, type VectorSearchMode } from "./qmd";
 
 const VIEW_ID = "qmdSearch.view";
@@ -21,7 +22,7 @@ interface OpenRequest {
   line: number;
 }
 
-type WebviewRequest = SearchRequest | OpenRequest | { type: "ready" };
+type WebviewRequest = SearchRequest | OpenRequest | { type: "cancel" } | { type: "ready" };
 
 interface SearchResult {
   uri?: string;
@@ -104,6 +105,8 @@ class QmdSearchViewProvider implements vscode.WebviewViewProvider, vscode.Dispos
 
       if (message.type === "search") {
         void this.search(view, message).catch((error: unknown) => this.reportWebviewError(view, error));
+      } else if (message.type === "cancel") {
+        this.stopSearch(view);
       } else if (message.type === "open") {
         void this.openResult(message);
       } else if (message.type === "ready") {
@@ -235,6 +238,17 @@ class QmdSearchViewProvider implements vscode.WebviewViewProvider, vscode.Dispos
     this.cancelActiveSearch();
   }
 
+  private stopSearch(view: vscode.WebviewView): void {
+    if (!this.activeSearch || this.activeSearch.view !== view) {
+      return;
+    }
+
+    this.searchGeneration += 1;
+    this.openableResults.clear();
+    this.cancelActiveSearch();
+    void view.webview.postMessage({ type: "cancelled" });
+  }
+
   private cancelActiveSearch(): void {
     if (this.activeSearch) {
       terminateProcessTree(this.activeSearch.child);
@@ -345,45 +359,6 @@ function executeQmdSearch(
   return { child, result };
 }
 
-function terminateProcessTree(child: ChildProcess): void {
-  const pid = child.pid;
-  if (!pid || child.exitCode !== null) {
-    return;
-  }
-
-  if (process.platform === "win32") {
-    const killer = execFile(
-      "taskkill",
-      ["/pid", String(pid), "/T", "/F"],
-      { windowsHide: true },
-      (error) => {
-        if (error) {
-          child.kill("SIGTERM");
-        }
-      },
-    );
-    killer.unref();
-    return;
-  }
-
-  try {
-    process.kill(-pid, "SIGTERM");
-  } catch {
-    child.kill("SIGTERM");
-    return;
-  }
-
-  const forceKill = setTimeout(() => {
-    try {
-      process.kill(-pid, "SIGKILL");
-    } catch {
-      // The process group has already exited.
-    }
-  }, 1500);
-  forceKill.unref();
-  child.once("close", () => clearTimeout(forceKill));
-}
-
 function resolveQmdExecutable(configured: string): string {
   if (configured !== "qmd") {
     return configured.startsWith(`~${path.sep}`)
@@ -480,6 +455,9 @@ function parseWebviewMessage(value: unknown): WebviewRequest | undefined {
 
   if (value.type === "ready") {
     return { type: "ready" };
+  }
+  if (value.type === "cancel") {
+    return { type: "cancel" };
   }
   if (
     value.type === "search"
@@ -628,6 +606,11 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
     }
     .submit:hover { background: var(--vscode-button-hoverBackground); }
     .submit:disabled { cursor: wait; opacity: .6; }
+    .submit.stop {
+      color: var(--vscode-button-secondaryForeground);
+      background: var(--vscode-button-secondaryBackground);
+    }
+    .submit.stop:hover { background: var(--vscode-button-secondaryHoverBackground); }
     .modes {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -916,12 +899,24 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
         renderEmpty("No collection selected", "Select one or more collections, then search again.", true);
         return;
       }
+      searching = true;
+      updateSearchButton();
+      status.textContent = modeLabel(mode) + " search starting...";
+      status.className = "meta pulse";
       vscode.postMessage({ type: "search", query, mode, collections: selectedCollections || [] });
     }
 
     queryInput.addEventListener("input", persistState);
     searchForm.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (searching) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Stopping...";
+        status.textContent = "Stopping QMD search...";
+        status.className = "meta pulse";
+        vscode.postMessage({ type: "cancel" });
+        return;
+      }
       runSearch();
     });
     for (const button of modeButtons) {
@@ -935,17 +930,25 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
         queryInput.select();
       } else if (message.type === "searching") {
         searching = true;
-        submitButton.disabled = true;
+        updateSearchButton();
         warning.hidden = true;
         status.textContent = modeLabel(message.mode) + " search running...";
         status.className = "meta pulse";
+      } else if (message.type === "cancelled") {
+        searching = false;
+        updateSearchButton();
+        warning.hidden = true;
+        status.textContent = "Search stopped";
+        status.title = "";
+        status.className = "meta";
+        renderEmpty("Search stopped", "The running QMD process was terminated.");
       } else if (message.type === "results") {
         searching = false;
-        submitButton.disabled = !collectionsReady;
+        updateSearchButton();
         renderResults(message.query, message.mode, message.summary);
       } else if (message.type === "error") {
         searching = false;
-        submitButton.disabled = !collectionsReady;
+        updateSearchButton();
         warning.hidden = true;
         status.textContent = message.message;
         status.title = message.message;
@@ -965,7 +968,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
         : selectedCollections.filter((collection) => collections.includes(collection));
       selectedCollections = retained;
       collectionsReady = true;
-      submitButton.disabled = searching;
+      updateSearchButton();
       collectionPicker.replaceChildren();
       collectionPicker.hidden = !collections.length;
 
@@ -987,6 +990,13 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
         collectionPicker.append(label);
       }
       persistState();
+    }
+
+    function updateSearchButton() {
+      submitButton.disabled = !searching && !collectionsReady;
+      submitButton.textContent = searching ? "Stop" : "Search";
+      submitButton.title = searching ? "Stop the running QMD search" : "";
+      submitButton.classList.toggle("stop", searching);
     }
 
     function applyAppearance(appearance) {

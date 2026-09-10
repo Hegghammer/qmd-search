@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Turn the Search button into a Stop button while QMD is running.
+- Terminate the complete QMD process group when a search is stopped.
+
 ## 0.1.0
 
 - Initial public release.

@@ -22,6 +22,7 @@ qmd status
 ## Features
 
 - Run QMD hybrid, BM25 keyword, or vector searches from a persistent side pane.
+- Stop a running QMD search from the search button.
 - See ranked results with scores, snippets, paths, and source lines.
 - Select a result to open its source file at the reported line.
 - Search the default QMD index, a named index, or selected collections.
@@ -35,7 +36,7 @@ The extension executes QMD with `--format json --full-path`. It does not scan fi
 Download the VSIX from [GitHub Releases](https://github.com/Hegghammer/qmd-search/releases), then run:
 
 ```sh
-code --install-extension qmd-search-0.1.0.vsix
+code --install-extension qmd-search-0.1.1.vsix
 ```
 
 Use `codium` instead of `code` for VSCodium. You can also run **Extensions: Install from VSIX...** from the Command Palette.
@@ -97,8 +98,8 @@ The packaging command creates a VSIX in the project directory. Generated VSIX fi
 Set the version in `package.json`, commit the change, then push a matching version tag:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
-The release workflow runs the checks and tests, creates `qmd-search-0.1.0.vsix`, and attaches it to a generated GitHub Release. The workflow rejects a tag that does not match the version in `package.json`.
+The release workflow runs the checks and tests, creates `qmd-search-0.1.1.vsix`, and attaches it to a generated GitHub Release. The workflow rejects a tag that does not match the version in `package.json`.
