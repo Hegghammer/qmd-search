@@ -91,3 +91,14 @@ npm run package
 ```
 
 The packaging command creates a VSIX in the project directory. Generated VSIX files and build output are ignored by Git.
+
+## Release
+
+Set the version in `package.json`, commit the change, then push a matching version tag:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The release workflow runs the checks and tests, creates `qmd-search-0.1.0.vsix`, and attaches it to a generated GitHub Release. The workflow rejects a tag that does not match the version in `package.json`.
