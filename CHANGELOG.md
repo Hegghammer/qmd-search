@@ -5,6 +5,7 @@
 - Rename `qmdSearch.keywordHighlight` to `qmdSearch.keywordHighlightFontface`.
 - Apply `qmdSearch.keywordHighlightColor` with any font style, including regular.
 - Apply `qmdSearch.resultBorderColor` to the left accent bar on each result.
+- Add `qmdSearch.resultTitleColor` for result titles.
 
 ## 0.1.2
 

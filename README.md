@@ -60,6 +60,7 @@ Run `QMD Search: Focus Search` from the Command Palette to focus and select the 
 - `qmdSearch.resultFontFamily`: CSS font family for result cards. The default is `""`, which uses VS Code's editor font family.
 - `qmdSearch.resultFontSize`: base result-card font size in pixels, from `8` to `32`. The default is `12`.
 - `qmdSearch.resultTextColor`: optional hex colour for result text, such as `"#d4d4d4"`. The default is `""`, which uses the current VS Code theme colours.
+- `qmdSearch.resultTitleColor`: optional hex colour for result titles, such as `"#c9c9c9"`. The default is `""`, which falls back to the result text colour.
 - `qmdSearch.resultLinkColor`: optional hex colour for source links, such as `"#4daafc"`. The default is `""`, which uses the current VS Code theme colour.
 - `qmdSearch.resultBorderColor`: optional hex colour for the frame and left accent bar around each result, such as `"#666666"`. The default is `""`, which uses the current VS Code theme colours.
 - `qmdSearch.snippetLines`: maximum snippet lines shown per result, from `1` to `50`. The default is `5`.
@@ -81,6 +82,7 @@ Complete example:
   "qmdSearch.resultFontFamily": "",
   "qmdSearch.resultFontSize": 12,
   "qmdSearch.resultTextColor": "",
+  "qmdSearch.resultTitleColor": "",
   "qmdSearch.resultLinkColor": "",
   "qmdSearch.resultBorderColor": "",
   "qmdSearch.snippetLines": 5,

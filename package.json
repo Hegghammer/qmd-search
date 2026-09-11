@@ -113,8 +113,15 @@
           "default": "",
           "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
           "patternErrorMessage": "Use an empty string or a hex colour such as #d4d4d4.",
-          "description": "Optional hex colour for result-card text. Leave empty to use the current VS Code theme colours."
-        },
+           "description": "Optional hex colour for result-card text. Leave empty to use the current VS Code theme colours."
+         },
+         "qmdSearch.resultTitleColor": {
+           "type": "string",
+           "default": "",
+           "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+           "patternErrorMessage": "Use an empty string or a hex colour such as #d4d4d4.",
+           "description": "Optional hex colour for result titles. Leave empty to fall back to the result text colour."
+         },
         "qmdSearch.resultLinkColor": {
           "type": "string",
           "default": "",

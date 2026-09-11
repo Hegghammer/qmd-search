@@ -51,6 +51,7 @@ interface ResultAppearance {
   fontFamily: string;
   fontSize: number;
   textColor: string;
+  titleColor: string;
   linkColor: string;
   borderColor: string;
   snippetLines: number;
@@ -77,6 +78,7 @@ export function activate(context: vscode.ExtensionContext): void {
         event.affectsConfiguration("qmdSearch.resultFontFamily")
         || event.affectsConfiguration("qmdSearch.resultFontSize")
         || event.affectsConfiguration("qmdSearch.resultTextColor")
+        || event.affectsConfiguration("qmdSearch.resultTitleColor")
         || event.affectsConfiguration("qmdSearch.resultLinkColor")
         || event.affectsConfiguration("qmdSearch.resultBorderColor")
         || event.affectsConfiguration("qmdSearch.snippetLines")
@@ -555,6 +557,7 @@ function getResultAppearance(): ResultAppearance {
     fontFamily: configuredFamily || "var(--vscode-editor-font-family)",
     fontSize: clamp(configuration.get<number>("resultFontSize", 12), 8, 32),
     textColor: getHexColor(configuration, "resultTextColor"),
+    titleColor: getHexColor(configuration, "resultTitleColor"),
     linkColor: getHexColor(configuration, "resultLinkColor"),
     borderColor: getHexColor(configuration, "resultBorderColor"),
     snippetLines: clamp(configuration.get<number>("snippetLines", 5), 1, 50),
@@ -770,6 +773,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
     .title {
       margin-bottom: 3px;
       overflow: hidden;
+      color: var(--qmd-result-title-color, var(--qmd-result-text-color, var(--vscode-foreground)));
       font-size: 1em;
       font-weight: 650;
       text-overflow: ellipsis;
@@ -1046,6 +1050,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       results.style.setProperty("--qmd-result-font-family", appearance.fontFamily);
       results.style.setProperty("--qmd-result-font-size", appearance.fontSize + "px");
       setOptionalStyleProperty("--qmd-result-text-color", appearance.textColor);
+      setOptionalStyleProperty("--qmd-result-title-color", appearance.titleColor);
       setOptionalStyleProperty("--qmd-result-link-color", appearance.linkColor);
       setOptionalStyleProperty("--qmd-result-border-color", appearance.borderColor);
       results.classList.toggle("layout-wide", appearance.layout === "wide");
