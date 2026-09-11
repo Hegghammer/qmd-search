@@ -749,7 +749,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       bottom: 0;
       left: 0;
       width: 3px;
-      background: var(--vscode-charts-blue);
+      background: var(--qmd-result-border-color, var(--vscode-charts-blue));
       content: "";
     }
     .hit:hover { border-color: var(--qmd-result-border-color, var(--vscode-focusBorder)); background: var(--vscode-list-hoverBackground); }

@@ -61,7 +61,7 @@ Run `QMD Search: Focus Search` from the Command Palette to focus and select the 
 - `qmdSearch.resultFontSize`: base result-card font size in pixels, from `8` to `32`. The default is `12`.
 - `qmdSearch.resultTextColor`: optional hex colour for result text, such as `"#d4d4d4"`. The default is `""`, which uses the current VS Code theme colours.
 - `qmdSearch.resultLinkColor`: optional hex colour for source links, such as `"#4daafc"`. The default is `""`, which uses the current VS Code theme colour.
-- `qmdSearch.resultBorderColor`: optional hex colour for the frame around each result, such as `"#666666"`. The default is `""`, which uses the current VS Code theme colours.
+- `qmdSearch.resultBorderColor`: optional hex colour for the frame and left accent bar around each result, such as `"#666666"`. The default is `""`, which uses the current VS Code theme colours.
 - `qmdSearch.snippetLines`: maximum snippet lines shown per result, from `1` to `50`. The default is `5`.
 - `qmdSearch.resultLayout`: result metadata layout. `"tall"` places metadata on separate lines; `"wide"` puts rank, title, and score on one line while keeping the source path below. The default is `"tall"`.
 - `qmdSearch.compactSpacing`: when `true`, reduces card padding, gaps, and snippet line spacing. The default is `false`.
