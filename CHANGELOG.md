@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Rename `qmdSearch.keywordHighlight` to `qmdSearch.keywordHighlightFontface`.
+- Apply `qmdSearch.keywordHighlightColor` with any font style, including regular.
+
 ## 0.1.2
 
 - Highlight matching terms in hybrid and keyword search results, with configurable emphasis and colour.

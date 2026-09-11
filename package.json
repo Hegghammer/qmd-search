@@ -2,7 +2,7 @@
   "name": "qmd-search",
   "displayName": "QMD Search",
   "description": "Search a QMD knowledge-base index from a polished VS Code sidebar.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "hegghammer",
   "author": "Thomas Hegghammer",
   "license": "MIT",
@@ -154,7 +154,7 @@
           "default": false,
           "description": "Reduce vertical padding, gaps, and snippet line spacing to fit more results in the sidebar."
         },
-        "qmdSearch.keywordHighlight": {
+        "qmdSearch.keywordHighlightFontface": {
           "type": "string",
           "enum": [
             "none",
@@ -162,19 +162,19 @@
             "italics"
           ],
           "enumDescriptions": [
-            "Do not distinguish matching keyword terms.",
+            "Show matching keyword terms in regular type.",
             "Show matching keyword terms in bold.",
             "Show matching keyword terms in italics."
           ],
           "default": "bold",
-          "description": "Style used to highlight matching terms in keyword and hybrid result titles and snippets."
+          "description": "Font style used to highlight matching terms in keyword and hybrid result titles and snippets."
         },
         "qmdSearch.keywordHighlightColor": {
           "type": "string",
           "default": "",
           "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
           "patternErrorMessage": "Use an empty string or a hex colour such as #ffcc00.",
-          "description": "Optional hex text colour for highlighted keyword terms. Leave empty to keep the current text colour."
+          "description": "Optional hex text colour for highlighted keyword terms, applied with any font style. Leave empty to keep the current text colour."
         },
         "qmdSearch.collections": {
           "type": "array",

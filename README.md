@@ -65,8 +65,8 @@ Run `QMD Search: Focus Search` from the Command Palette to focus and select the 
 - `qmdSearch.snippetLines`: maximum snippet lines shown per result, from `1` to `50`. The default is `5`.
 - `qmdSearch.resultLayout`: result metadata layout. `"tall"` places metadata on separate lines; `"wide"` puts rank, title, and score on one line while keeping the source path below. The default is `"tall"`.
 - `qmdSearch.compactSpacing`: when `true`, reduces card padding, gaps, and snippet line spacing. The default is `false`.
-- `qmdSearch.keywordHighlight`: style for matching terms in hybrid and keyword result titles and snippets. Valid values are `"none"`, `"bold"`, and `"italics"`. The default is `"bold"`.
-- `qmdSearch.keywordHighlightColor`: optional hex text colour for highlighted terms, such as `"#ffcc00"`. The default is `""`, which keeps the current result text colour. `"none"` disables highlighting even when a colour is set.
+- `qmdSearch.keywordHighlightFontface`: font style for matching terms in hybrid and keyword result titles and snippets. Valid values are `"none"` (regular type), `"bold"`, and `"italics"`. The default is `"bold"`.
+- `qmdSearch.keywordHighlightColor`: optional hex text colour for highlighted terms, such as `"#ffcc00"`, applied with any font style including `"none"`. The default is `""`, which keeps the current result text colour.
 - `qmdSearch.collections`: up to five unique collection names shown as checkboxes above the results. Names are trimmed and deduplicated. All configured collections are selected initially. The default empty array searches all included-by-default QMD collections without showing the picker.
 - `qmdSearch.index`: optional named QMD index. The default is `""`, which uses QMD's default or project-local index.
 
@@ -86,7 +86,7 @@ Complete example:
   "qmdSearch.snippetLines": 5,
   "qmdSearch.resultLayout": "tall",
   "qmdSearch.compactSpacing": false,
-  "qmdSearch.keywordHighlight": "bold",
+  "qmdSearch.keywordHighlightFontface": "bold",
   "qmdSearch.keywordHighlightColor": "",
   "qmdSearch.collections": ["notes", "documentation"],
   "qmdSearch.index": ""

@@ -56,7 +56,7 @@ interface ResultAppearance {
   snippetLines: number;
   layout: "tall" | "wide";
   compactSpacing: boolean;
-  keywordHighlight: "none" | "bold" | "italics";
+  keywordHighlightFontface: "none" | "bold" | "italics";
   keywordHighlightColor: string;
 }
 
@@ -82,7 +82,7 @@ export function activate(context: vscode.ExtensionContext): void {
         || event.affectsConfiguration("qmdSearch.snippetLines")
         || event.affectsConfiguration("qmdSearch.resultLayout")
         || event.affectsConfiguration("qmdSearch.compactSpacing")
-        || event.affectsConfiguration("qmdSearch.keywordHighlight")
+        || event.affectsConfiguration("qmdSearch.keywordHighlightFontface")
         || event.affectsConfiguration("qmdSearch.keywordHighlightColor")
       ) {
         provider.updateAppearance();
@@ -549,7 +549,7 @@ function getResultAppearance(): ResultAppearance {
   const configuration = vscode.workspace.getConfiguration("qmdSearch");
   const configuredFamily = configuration.get<string>("resultFontFamily", "").trim();
   const configuredLayout = configuration.get<string>("resultLayout", "tall");
-  const configuredHighlight = configuration.get<string>("keywordHighlight", "bold");
+  const configuredHighlight = configuration.get<string>("keywordHighlightFontface", "bold");
 
   return {
     fontFamily: configuredFamily || "var(--vscode-editor-font-family)",
@@ -560,7 +560,7 @@ function getResultAppearance(): ResultAppearance {
     snippetLines: clamp(configuration.get<number>("snippetLines", 5), 1, 50),
     layout: configuredLayout === "wide" ? "wide" : "tall",
     compactSpacing: configuration.get<boolean>("compactSpacing", false),
-    keywordHighlight: configuredHighlight === "none" || configuredHighlight === "italics"
+    keywordHighlightFontface: configuredHighlight === "none" || configuredHighlight === "italics"
       ? configuredHighlight
       : "bold",
     keywordHighlightColor: getHexColor(configuration, "keywordHighlightColor"),
@@ -795,8 +795,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 5;
     }
-    .results.keyword-highlight-bold .keyword-highlight,
-    .results.keyword-highlight-italics .keyword-highlight {
+    .results .keyword-highlight {
       color: var(--qmd-keyword-highlight-color, inherit);
     }
     .results.keyword-highlight-bold .keyword-highlight { font-weight: 700; }
@@ -1051,8 +1050,8 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       setOptionalStyleProperty("--qmd-result-border-color", appearance.borderColor);
       results.classList.toggle("layout-wide", appearance.layout === "wide");
       results.classList.toggle("compact", appearance.compactSpacing);
-      results.classList.toggle("keyword-highlight-bold", appearance.keywordHighlight === "bold");
-      results.classList.toggle("keyword-highlight-italics", appearance.keywordHighlight === "italics");
+      results.classList.toggle("keyword-highlight-bold", appearance.keywordHighlightFontface === "bold");
+      results.classList.toggle("keyword-highlight-italics", appearance.keywordHighlightFontface === "italics");
       setOptionalStyleProperty("--qmd-keyword-highlight-color", appearance.keywordHighlightColor);
       snippetLines = appearance.snippetLines;
       for (const snippet of results.querySelectorAll(".snippet")) {
