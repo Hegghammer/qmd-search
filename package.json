@@ -2,7 +2,7 @@
   "name": "qmd-search",
   "displayName": "QMD Search",
   "description": "Search a QMD knowledge-base index from a polished VS Code sidebar.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "hegghammer",
   "author": "Thomas Hegghammer",
   "license": "MIT",
@@ -108,6 +108,27 @@
           "maximum": 32,
           "description": "Base font size in pixels for result cards."
         },
+        "qmdSearch.resultTextColor": {
+          "type": "string",
+          "default": "",
+          "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "patternErrorMessage": "Use an empty string or a hex colour such as #d4d4d4.",
+          "description": "Optional hex colour for result-card text. Leave empty to use the current VS Code theme colours."
+        },
+        "qmdSearch.resultLinkColor": {
+          "type": "string",
+          "default": "",
+          "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "patternErrorMessage": "Use an empty string or a hex colour such as #4daafc.",
+          "description": "Optional hex colour for source links in result cards. Leave empty to use the current VS Code theme colour."
+        },
+        "qmdSearch.resultBorderColor": {
+          "type": "string",
+          "default": "",
+          "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "patternErrorMessage": "Use an empty string or a hex colour such as #666666.",
+          "description": "Optional hex colour for the border around each result card. Leave empty to use the current VS Code theme colours."
+        },
         "qmdSearch.snippetLines": {
           "type": "integer",
           "default": 5,
@@ -132,6 +153,28 @@
           "type": "boolean",
           "default": false,
           "description": "Reduce vertical padding, gaps, and snippet line spacing to fit more results in the sidebar."
+        },
+        "qmdSearch.keywordHighlight": {
+          "type": "string",
+          "enum": [
+            "none",
+            "bold",
+            "italics"
+          ],
+          "enumDescriptions": [
+            "Do not distinguish matching keyword terms.",
+            "Show matching keyword terms in bold.",
+            "Show matching keyword terms in italics."
+          ],
+          "default": "bold",
+          "description": "Style used to highlight matching terms in keyword and hybrid result titles and snippets."
+        },
+        "qmdSearch.keywordHighlightColor": {
+          "type": "string",
+          "default": "",
+          "pattern": "^$|^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "patternErrorMessage": "Use an empty string or a hex colour such as #ffcc00.",
+          "description": "Optional hex text colour for highlighted keyword terms. Leave empty to keep the current text colour."
         },
         "qmdSearch.collections": {
           "type": "array",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Highlight matching terms in hybrid and keyword search results, with configurable emphasis and colour.
+- Configure result text, source-link, and border colours.
+
 ## 0.1.1
 
 - Turn the Search button into a Stop button while QMD is running.

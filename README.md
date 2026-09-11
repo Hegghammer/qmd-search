@@ -24,6 +24,7 @@ qmd status
 - Run QMD hybrid, BM25 keyword, or vector searches from a persistent side pane.
 - Stop a running QMD search from the search button.
 - See ranked results with scores, snippets, paths, and source lines.
+- Highlight matching terms in hybrid and keyword result titles and snippets.
 - Select a result to open its source file at the reported line.
 - Search the default QMD index, a named index, or selected collections.
 - Retain the current query and search mode when the view is hidden.
@@ -36,7 +37,7 @@ The extension executes QMD with `--format json --full-path`. It does not scan fi
 Download the VSIX from [GitHub Releases](https://github.com/Hegghammer/qmd-search/releases), then run:
 
 ```sh
-code --install-extension qmd-search-0.1.1.vsix
+code --install-extension qmd-search-0.1.2.vsix
 ```
 
 Use `codium` instead of `code` for VSCodium. You can also run **Extensions: Install from VSIX...** from the Command Palette.
@@ -58,9 +59,14 @@ Run `QMD Search: Focus Search` from the Command Palette to focus and select the 
 - `qmdSearch.maxResults`: maximum number of ranked results per search, from `1` to `1000`. The default is `20`.
 - `qmdSearch.resultFontFamily`: CSS font family for result cards. The default is `""`, which uses VS Code's editor font family.
 - `qmdSearch.resultFontSize`: base result-card font size in pixels, from `8` to `32`. The default is `12`.
+- `qmdSearch.resultTextColor`: optional hex colour for result text, such as `"#d4d4d4"`. The default is `""`, which uses the current VS Code theme colours.
+- `qmdSearch.resultLinkColor`: optional hex colour for source links, such as `"#4daafc"`. The default is `""`, which uses the current VS Code theme colour.
+- `qmdSearch.resultBorderColor`: optional hex colour for the frame around each result, such as `"#666666"`. The default is `""`, which uses the current VS Code theme colours.
 - `qmdSearch.snippetLines`: maximum snippet lines shown per result, from `1` to `50`. The default is `5`.
 - `qmdSearch.resultLayout`: result metadata layout. `"tall"` places metadata on separate lines; `"wide"` puts rank, title, and score on one line while keeping the source path below. The default is `"tall"`.
 - `qmdSearch.compactSpacing`: when `true`, reduces card padding, gaps, and snippet line spacing. The default is `false`.
+- `qmdSearch.keywordHighlight`: style for matching terms in hybrid and keyword result titles and snippets. Valid values are `"none"`, `"bold"`, and `"italics"`. The default is `"bold"`.
+- `qmdSearch.keywordHighlightColor`: optional hex text colour for highlighted terms, such as `"#ffcc00"`. The default is `""`, which keeps the current result text colour. `"none"` disables highlighting even when a colour is set.
 - `qmdSearch.collections`: up to five unique collection names shown as checkboxes above the results. Names are trimmed and deduplicated. All configured collections are selected initially. The default empty array searches all included-by-default QMD collections without showing the picker.
 - `qmdSearch.index`: optional named QMD index. The default is `""`, which uses QMD's default or project-local index.
 
@@ -74,9 +80,14 @@ Complete example:
   "qmdSearch.maxResults": 20,
   "qmdSearch.resultFontFamily": "",
   "qmdSearch.resultFontSize": 12,
+  "qmdSearch.resultTextColor": "",
+  "qmdSearch.resultLinkColor": "",
+  "qmdSearch.resultBorderColor": "",
   "qmdSearch.snippetLines": 5,
   "qmdSearch.resultLayout": "tall",
   "qmdSearch.compactSpacing": false,
+  "qmdSearch.keywordHighlight": "bold",
+  "qmdSearch.keywordHighlightColor": "",
   "qmdSearch.collections": ["notes", "documentation"],
   "qmdSearch.index": ""
 }
@@ -98,8 +109,8 @@ The packaging command creates a VSIX in the project directory. Generated VSIX fi
 Set the version in `package.json`, commit the change, then push a matching version tag:
 
 ```sh
-git tag v0.1.1
-git push origin v0.1.1
+git tag v0.1.2
+git push origin v0.1.2
 ```
 
-The release workflow runs the checks and tests, creates `qmd-search-0.1.1.vsix`, and attaches it to a generated GitHub Release. The workflow rejects a tag that does not match the version in `package.json`.
+The release workflow runs the checks and tests, creates `qmd-search-0.1.2.vsix`, and attaches it to a generated GitHub Release. The workflow rejects a tag that does not match the version in `package.json`.

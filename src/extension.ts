@@ -4,6 +4,7 @@ import { accessSync, constants } from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
+import { findKeywordHighlights, type HighlightRange } from "./highlight";
 import { terminateProcessTree } from "./process";
 import { buildQmdArgs, parseQmdOutput, QMD_MODES, type QmdMode, type VectorSearchMode } from "./qmd";
 
@@ -31,6 +32,8 @@ interface SearchResult {
   snippet: string;
   line: number;
   score: number;
+  titleHighlights: HighlightRange[];
+  snippetHighlights: HighlightRange[];
 }
 
 interface SearchSummary {
@@ -47,9 +50,14 @@ interface SearchExecution {
 interface ResultAppearance {
   fontFamily: string;
   fontSize: number;
+  textColor: string;
+  linkColor: string;
+  borderColor: string;
   snippetLines: number;
   layout: "tall" | "wide";
   compactSpacing: boolean;
+  keywordHighlight: "none" | "bold" | "italics";
+  keywordHighlightColor: string;
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -68,9 +76,14 @@ export function activate(context: vscode.ExtensionContext): void {
       if (
         event.affectsConfiguration("qmdSearch.resultFontFamily")
         || event.affectsConfiguration("qmdSearch.resultFontSize")
+        || event.affectsConfiguration("qmdSearch.resultTextColor")
+        || event.affectsConfiguration("qmdSearch.resultLinkColor")
+        || event.affectsConfiguration("qmdSearch.resultBorderColor")
         || event.affectsConfiguration("qmdSearch.snippetLines")
         || event.affectsConfiguration("qmdSearch.resultLayout")
         || event.affectsConfiguration("qmdSearch.compactSpacing")
+        || event.affectsConfiguration("qmdSearch.keywordHighlight")
+        || event.affectsConfiguration("qmdSearch.keywordHighlightColor")
       ) {
         provider.updateAppearance();
       }
@@ -344,7 +357,7 @@ function executeQmdSearch(
         const parsed = parseQmdOutput(stdout);
         settled = true;
         resolve({
-          results: parsed.items.map((item, index) => mapQmdResult(item, cwd, index)),
+          results: parsed.items.map((item, index) => addHighlights(mapQmdResult(item, cwd, index), query, mode)),
           elapsedMs: Date.now() - startedAt,
           warning: combineWarnings(parsed.notice, extractQmdWarning(stderr)),
         });
@@ -413,6 +426,8 @@ function mapQmdResult(value: unknown, cwd: string, index: number): SearchResult 
       snippet: cleanSnippet(rawSnippet),
       line,
       score,
+      titleHighlights: [],
+      snippetHighlights: [],
     };
   }
 
@@ -426,6 +441,16 @@ function mapQmdResult(value: unknown, cwd: string, index: number): SearchResult 
     snippet: cleanSnippet(rawSnippet),
     line,
     score,
+    titleHighlights: [],
+    snippetHighlights: [],
+  };
+}
+
+function addHighlights(result: SearchResult, query: string, mode: QmdMode): SearchResult {
+  return {
+    ...result,
+    titleHighlights: findKeywordHighlights(result.title, query, mode),
+    snippetHighlights: findKeywordHighlights(result.snippet, query, mode),
   };
 }
 
@@ -524,14 +549,27 @@ function getResultAppearance(): ResultAppearance {
   const configuration = vscode.workspace.getConfiguration("qmdSearch");
   const configuredFamily = configuration.get<string>("resultFontFamily", "").trim();
   const configuredLayout = configuration.get<string>("resultLayout", "tall");
+  const configuredHighlight = configuration.get<string>("keywordHighlight", "bold");
 
   return {
     fontFamily: configuredFamily || "var(--vscode-editor-font-family)",
     fontSize: clamp(configuration.get<number>("resultFontSize", 12), 8, 32),
+    textColor: getHexColor(configuration, "resultTextColor"),
+    linkColor: getHexColor(configuration, "resultLinkColor"),
+    borderColor: getHexColor(configuration, "resultBorderColor"),
     snippetLines: clamp(configuration.get<number>("snippetLines", 5), 1, 50),
     layout: configuredLayout === "wide" ? "wide" : "tall",
     compactSpacing: configuration.get<boolean>("compactSpacing", false),
+    keywordHighlight: configuredHighlight === "none" || configuredHighlight === "italics"
+      ? configuredHighlight
+      : "bold",
+    keywordHighlightColor: getHexColor(configuration, "keywordHighlightColor"),
   };
+}
+
+function getHexColor(configuration: vscode.WorkspaceConfiguration, key: string): string {
+  const value = configuration.get<string>(key, "").trim();
+  return /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value) ? value : "";
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -696,9 +734,9 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       margin: 0 0 7px;
       padding: 10px 10px 9px 12px;
       overflow: hidden;
-      border: 1px solid var(--vscode-widget-border, transparent);
+      border: 1px solid var(--qmd-result-border-color, var(--vscode-widget-border, transparent));
       border-radius: 7px;
-      color: var(--vscode-foreground);
+      color: var(--qmd-result-text-color, var(--vscode-foreground));
       background: var(--vscode-editorWidget-background, transparent);
       font-family: var(--qmd-result-font-family);
       font-size: var(--qmd-result-font-size);
@@ -714,7 +752,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       background: var(--vscode-charts-blue);
       content: "";
     }
-    .hit:hover { border-color: var(--vscode-focusBorder); background: var(--vscode-list-hoverBackground); }
+    .hit:hover { border-color: var(--qmd-result-border-color, var(--vscode-focusBorder)); background: var(--vscode-list-hoverBackground); }
     .hit:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }
     .hit[aria-disabled="true"] { cursor: not-allowed; opacity: .65; }
     .hit-topline {
@@ -723,7 +761,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       justify-content: space-between;
       gap: 8px;
       margin-bottom: 5px;
-      color: var(--vscode-descriptionForeground);
+      color: var(--qmd-result-text-color, var(--vscode-descriptionForeground));
       font-size: .82em;
       font-variant-numeric: tabular-nums;
     }
@@ -740,7 +778,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
     .source {
       margin-bottom: 7px;
       overflow: hidden;
-      color: var(--vscode-textLink-foreground);
+      color: var(--qmd-result-link-color, var(--vscode-textLink-foreground));
       font-size: .82em;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -748,7 +786,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
     .snippet {
       display: -webkit-box;
       overflow: hidden;
-      color: var(--vscode-foreground);
+      color: var(--qmd-result-text-color, var(--vscode-foreground));
       font-family: inherit;
       font-size: 1em;
       line-height: 1.45;
@@ -757,6 +795,12 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 5;
     }
+    .results.keyword-highlight-bold .keyword-highlight,
+    .results.keyword-highlight-italics .keyword-highlight {
+      color: var(--qmd-keyword-highlight-color, inherit);
+    }
+    .results.keyword-highlight-bold .keyword-highlight { font-weight: 700; }
+    .results.keyword-highlight-italics .keyword-highlight { font-style: italic; }
     .results.layout-wide .hit {
       display: grid;
       grid-template-areas:
@@ -1002,11 +1046,25 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
     function applyAppearance(appearance) {
       results.style.setProperty("--qmd-result-font-family", appearance.fontFamily);
       results.style.setProperty("--qmd-result-font-size", appearance.fontSize + "px");
+      setOptionalStyleProperty("--qmd-result-text-color", appearance.textColor);
+      setOptionalStyleProperty("--qmd-result-link-color", appearance.linkColor);
+      setOptionalStyleProperty("--qmd-result-border-color", appearance.borderColor);
       results.classList.toggle("layout-wide", appearance.layout === "wide");
       results.classList.toggle("compact", appearance.compactSpacing);
+      results.classList.toggle("keyword-highlight-bold", appearance.keywordHighlight === "bold");
+      results.classList.toggle("keyword-highlight-italics", appearance.keywordHighlight === "italics");
+      setOptionalStyleProperty("--qmd-keyword-highlight-color", appearance.keywordHighlightColor);
       snippetLines = appearance.snippetLines;
       for (const snippet of results.querySelectorAll(".snippet")) {
         snippet.style.webkitLineClamp = String(snippetLines);
+      }
+    }
+
+    function setOptionalStyleProperty(name, value) {
+      if (value) {
+        results.style.setProperty(name, value);
+      } else {
+        results.style.removeProperty(name);
       }
     }
 
@@ -1059,7 +1117,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
 
         const title = document.createElement("div");
         title.className = "title";
-        title.textContent = hit.title;
+        appendHighlightedText(title, hit.title, hit.titleHighlights);
 
         const source = document.createElement("div");
         source.className = "source";
@@ -1070,7 +1128,7 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
           const snippet = document.createElement("div");
           snippet.className = "snippet";
           snippet.style.webkitLineClamp = String(snippetLines);
-          snippet.textContent = hit.snippet;
+          appendHighlightedText(snippet, hit.snippet, hit.snippetHighlights);
           button.append(snippet);
         }
         if (hit.uri) {
@@ -1082,6 +1140,19 @@ function getWebviewHtml(webview: vscode.Webview, defaultMode: QmdMode): string {
         }
         results.append(button);
       });
+    }
+
+    function appendHighlightedText(element, text, ranges) {
+      let offset = 0;
+      for (const range of ranges || []) {
+        element.append(document.createTextNode(text.slice(offset, range.start)));
+        const highlight = document.createElement("span");
+        highlight.className = "keyword-highlight";
+        highlight.textContent = text.slice(range.start, range.end);
+        element.append(highlight);
+        offset = range.end;
+      }
+      element.append(document.createTextNode(text.slice(offset)));
     }
 
     function renderEmpty(title, message, isError = false) {
